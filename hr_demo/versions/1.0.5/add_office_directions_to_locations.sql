@@ -1,0 +1,1 @@
+alter table locations add (office_directions varchar2(255));

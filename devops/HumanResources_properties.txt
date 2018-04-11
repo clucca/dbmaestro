@@ -1,0 +1,15 @@
+# Human Resources Variables
+#---------#
+
+# Static Variables
+pipeline=HumanResources
+base_path=C:\\pipelinescript
+base_schema=HR
+ci_pipeline=HR_CI
+ci_base_schema=HR_INFRA
+ci_environment=DIT
+artifactory_url=http://pocintegration:8081/artifactory/dbm_devops
+artifactory_user=admin
+username=dbmguest
+password=Trial123!
+java_cmd=java -jar "C:\\Program Files (x86)\\DBmaestro\\TeamWork\\TeamWorkOracleServer\\Automation\\DBmaestroAgent.jar"

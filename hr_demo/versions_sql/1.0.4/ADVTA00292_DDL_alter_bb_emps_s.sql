@@ -1,0 +1,5 @@
+alter table BB_EMPLOYEES alter column title VARCHAR(100)
+GO
+
+CREATE INDEX IDX_LAST_NAME ON BB_EMPLOYEES(last_name)
+GO

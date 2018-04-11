@@ -1,0 +1,188 @@
+{
+  "monitored_dbs" : {
+    "name" : "Monitored Databases",
+    "usage" : "dbm_api.bat action=monitored_dbs",
+    "queries" : 
+    [
+		{"connection" : "repo",
+		"query": "select d.id, i.oracledbid, i.servermachinename, d.dbname, d.serverinstanceid, i.serviceinstancename from TBLMONITOREDDATABASES d INNER JOIN TBLMONITOREDSERVERINSTANCES i on i.INSTANCEID = d.SERVERINSTANCEID",
+		"output": [
+			["DBName", 3,15],
+			["InstanceName", 5,20],
+			["Machine", 2,15],
+			["DBID", 1,14] 
+    ]
+		}
+	  ]
+  },
+  "checked_out_objects" : {
+    "name" : "Remote Databases",
+    "usage" : "dbm_api.bat action=remote_dbs ARG1='<remote_connection>' (like this: @dbmtemplate:1521/orcl)",
+    "queries" : 
+    [
+		{"connection" : "remote",
+		"query": "select schemaname, objectname, SCHEMACHECKEDOUTOSUSER, objecttype from DBMAESTRO_TEAMWORK.TBLLOCKINGDATA where schemacheckedoutosuser is NOT NULL",
+		"output": [
+			["SchemaName", 0,15],
+			["ObjectName", 1,15],
+			["CheckoutUser", 2,15],
+			["Type", 3,10] 
+    ]
+		}
+	  ]
+  },
+  "packages" : {
+      "name" : "Package History for Pipeline",
+      "usage" : "dbm_api.bat action=packages ARG1=<pipeline_name> ARG2=<path_to_target_json>",
+    "queries" : 
+    [
+  		{ "connection" : "repo",
+  		"query": "select v.id, v.name as version, TO_CHAR(s.creation_date, 'MM/DD/YYYY'), s.name as script, s.SCRIPT_ID, v.IS_ENABLED as enabled, v.WAS_DEPLOYED as deployed from TWMANAGEDB.TBL_SMG_VERSION v INNER JOIN TWMANAGEDB.TBL_SMG_MANAGED_STATIC_SCR jt ON v.ID = jt.VERSION_ID INNER JOIN TWMANAGEDB.TBL_SMG_MANAGED_DYNAMIC_SCR s ON s.script_id = jt.script_id INNER JOIN twmanagedb.TBL_FLOW p ON p.flowid = v.pipeline_id where p.FLOWNAME = 'ARG1' AND v.IS_ENABLED = 1 order by v.name, jt.excution_order",
+  		"post_process" : "create_control_json",
+  		"output": [
+        ["ID",0,4],
+  		  ["Version",1,20],
+  		  ["CreatedAt",2,15],
+  		  ["Script",3,35],
+		  ["ScriptID",4,5],
+      ["enabled",5,5],
+      ["deployed",6,5]
+    ]
+  		}
+  	]
+  },
+    "package_export" : {
+      "name" : "Exports script content from one pipeline to another. Uses export_control.json file which should be in target staging folder",
+      "usage" : "dbm_api.bat action=package_export ARG1=<source_pipeline> ARG2=<target_pipeline>",
+    "queries" : 
+    [
+  		{ "connection" : "repo",
+  		"query": "select v.id, v.name as version, TO_CHAR(s.creation_date, 'MM/DD/YYYY') as created_at, s.name as script, s.SCRIPT_ID, s.script_sorce_data_reference, p.FLOWNAME, jt.excution_order, v.IS_ENABLED as enabled, v.WAS_DEPLOYED as deployed from TWMANAGEDB.TBL_SMG_VERSION v INNER JOIN TWMANAGEDB.TBL_SMG_MANAGED_STATIC_SCR jt ON v.ID = jt.VERSION_ID INNER JOIN TWMANAGEDB.TBL_SMG_MANAGED_DYNAMIC_SCR s ON s.script_id = jt.script_id INNER JOIN twmanagedb.TBL_FLOW p ON p.flowid = v.pipeline_id where p.FLOWNAME = 'ARG1' AND v.IS_ENABLED = 1 order by v.name, jt.excution_order",
+  		"post_process" : "export_packages",
+  		"output": [
+        ["ID",0,4],
+  		  ["Version",1,20],
+  		  ["CreatedAt",2,15],
+  		  ["Script",3,25],
+		  ["ScriptID",4,5],
+      ["enabled",5,5],
+      ["deployed",6,5]
+    ]
+  		}
+  	]
+  }, 
+    "package_content" : {
+      "name" : "Script content enter Pipeline, Version and target path",
+      "usage" : "dbm_api.bat action=package_content ARG1=<pipeline> ARG2=<Version>",
+  	"queries" : 
+    [
+  		{ "connection" : "repo",
+  		  "query": "select v.id, v.name as version, TO_CHAR(s.creation_date, 'MM/DD/YYYY') as created_at, s.name as script, s.SCRIPT_ID, s.script_sorce_data_reference, p.FLOWNAME, jt.excution_order from TWMANAGEDB.TBL_SMG_VERSION v INNER JOIN TWMANAGEDB.TBL_SMG_MANAGED_STATIC_SCR jt ON v.ID = jt.VERSION_ID INNER JOIN TWMANAGEDB.TBL_SMG_MANAGED_DYNAMIC_SCR s ON s.script_id = jt.script_id INNER JOIN twmanagedb.TBL_FLOW p ON p.flowid = v.pipeline_id where p.FLOWNAME = 'ARG1' AND v.name = 'ARG2' order by v.name, jt.excution_order",
+  		  "post_process" : "show_script",
+  		  "output": [
+            ["ID",0,4],
+  		    ["Version",1,20],
+  		    ["CreatedAt",2,15],
+  		    ["Script",3,25],
+		    ["ScriptID",4,5]
+      ]
+  		}
+  	]
+  },
+    "pipline_script_path" : {
+      "name" : "Project info enter Pipeline/Project name",
+      "usage" : "dbm_api.bat action=pipeline_script_path ARG1=<pipeline>",
+  	"queries" : 
+    [
+  		{ "connection" : "repo",
+  		  "query": "select f.flowid, f.flowname,s.scriptoutputfolder from TWMANAGEDB.TBL_FLOW f inner join TWMANAGEDB.TBL_FLOW_SETTINGS s on f.flowid = s.flowid where f.flowname = 'ARG1'",
+  		  "output": [
+            ["ID",0,4],
+  		    ["Name",1,20],
+  		    ["ScriptPath",2,35]
+  		  ]
+  		}
+  	]
+  },
+  "label_contents" : {
+    "name" : "Object revisions in label",
+    "usage" : "dbm_api.bat action=label_contents ARG1=<label ID>",
+	"queries" : 
+  [
+		{ "connection" : "repo",
+		  "query": "select chk.ACTION_LOG_ID, rev.COUNTED_REVISION as Revision, ent.dbobjectname as Object, l.name as Label, l.id as labelid, rev.ENTITYREPOSITORYID as entid  from twmanagedb.twlabels_checkins chk INNER JOIN TWMANAGEDB.TBLCONTROLLEROBJECTACTIONLOG rev ON chk.action_log_id = rev.id INNER JOIN TWMANAGEDB.TWLABELS l on chk.label_id = l.id INNER JOIN TWMANAGEDB.TBLCONTLMONITOREDDBENTITIES ent ON rev.ENTITYREPOSITORYID = ent.id WHERE l.ID = 'ARG1'",
+		  "output": [
+          ["ActID",0,6],
+		    ["Rev",1,4],
+		    ["Object",2,25],
+        ["Label",3,25],
+        ["LabID",4,6],
+        ["EntID",5,6]
+		  ]
+		}
+	]
+  },
+  "labels" : {
+    "name" : "Label list for a schema",
+    "usage" : "dbm_api.bat action=labels ARG1=<schema name>",
+	"queries" : 
+  [
+		{ "connection" : "repo",
+		  "query": "select l.name as Label, l.id as labelid, ent.schemaname from twmanagedb.twlabels_checkins chk INNER JOIN TWMANAGEDB.TBLCONTROLLEROBJECTACTIONLOG rev ON chk.action_log_id = rev.id INNER JOIN TWMANAGEDB.TWLABELS l on chk.label_id = l.id INNER JOIN TWMANAGEDB.TBLCONTLMONITOREDDBENTITIES ent ON rev.ENTITYREPOSITORYID = ent.id where ent.schemaname = 'ARG1' group by l.name, l.id, ent.schemaname order by l.id",
+		  "output": [
+          ["Label",0,35],
+		    ["LabID",1,6],
+		    ["Schema",2,25]
+		  ]
+		}
+	]
+  },
+  "object_revisions" : {
+    "name" : "Revisions for an object",
+    "usage" : "dbm_api.bat action=object_revisions ARG1=<schema name> ARG2=<object_name>",
+	"queries" : 
+  [
+		{ "connection" : "repo",
+		  "query": "select COUNTEDREVISION, object_name, schemaname from TWMANAGEDB.VIEW_CTRL_OBJSHISTORY where object_name = 'ARG2' and schemaname = 'ARG1'",
+		  "output": [
+          ["Rev",0,5],
+		    ["Object",1,25],
+		    ["Schema",2,25]
+		  ]
+		}
+	]
+  },
+  "object_ddl" : {
+    "name" : "ddl for an object",
+    "usage" : "dbm_api.bat action=object_ddl ARG1=<object name> ARG2=<revision>",
+	"queries" : 
+  [
+		{ "connection" : "repo",
+		  "query": "select COUNTEDREVISION, object_name, schemaname, objectcreationscript from TWMANAGEDB.VIEW_CTRL_OBJSHISTORY_SCRIPT where object_name = 'ARG1' and COUNTEDREVISION = 'ARG2'",
+  		"post_process" : "show_object_ddl",
+  		"output": [
+          ["Rev",0,5],
+		    ["Object",1,25],
+		    ["Schema",2,25]
+		  ]
+		}
+	]
+  },
+  "environment_history" : {
+    "name" : "Package history for an Environment",
+    "usage" : "dbm_api.bat action=environment_history ARG1=<pipeline> ARG2=<environment>",
+	"queries" : 
+  [
+		{ "connection" : "repo",
+		  "query": "select v.NAME as Version, f.flowname as pipeline, e.lsname as environment, s.dbcname as schema, script.NAME as Script, h.id, h.schema_id, h.END_EXEC_TIME as Finish, h.script_id, h.script_history_id, h.target_schema_id from TWMANAGEDB.TBL_SMG_DEPLOY_COMMAND_HISTORY h INNER JOIN TWMANAGEDB.TBL_DBC s on s.dbcid = h.schema_id INNER JOIN TWMANAGEDB.TBL_LS_DBC_MAPPING jt ON jt.DBCID = s.DBCID INNER JOIN TWMANAGEDB.TBL_LS e ON jt.LSID = e.LSID INNER JOIN TWMANAGEDB.TBL_FLOW f ON e.FLOWID = f.FLOWID INNER JOIN TWMANAGEDB.TBL_SMG_MANAGED_STATIC_SCR jt ON h.SCRIPT_ID = jt.SCRIPT_ID INNER JOIN TWMANAGEDB.TBL_SMG_MANAGED_DYNAMIC_SCR script ON script.script_id = jt.script_id INNER JOIN TWMANAGEDB.TBL_SMG_VERSION v ON jt.VERSION_ID = v.ID WHERE command_type_id = 4 AND f.FLOWNAME = 'ARG1' AND e.LSNAME = 'ARG2' ORDER BY h.END_EXEC_TIME",
+  		"output": [
+          ["Version",0,20],
+		    ["Schema",3,20],
+		    ["Script",4,30],
+        ["Finish",7,15]
+		  ]
+		}
+	]
+  }
+  
+}

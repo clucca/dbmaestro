@@ -1,0 +1,65 @@
+{
+  "### Instructions ###": 
+    "Enter the local settings items for your installation",
+    "general" : {
+      "base_path" : "C:\\Automation\\dbm_demo",
+      "java_cmd" : "java -jar \"C:\\Program Files (x86)\\DBmaestro\\TeamWork\\TeamWorkOracleServer\\Automation\\DBmaestroAgent.jar\"",
+      "staging_path" : "C:\\pipelinescript",
+      "server" : "dbmtemplate"
+    },
+    "connections" : {
+    "repository" : {
+      "user" : "twmanagedb",
+      "password" : "manage#2009",
+      "connect" : "dbmtemplate:1521/orcl"
+    },
+    "remote" : {
+      "user" : "dbmaestro_teamwork",
+      "password" : "Remote#2009",
+      "connect" : "dbmtemplate:1521/orcl"
+    }
+  },
+	"branch_map" : {
+		"release" : [
+		  {
+		  "pipeline" : "HumanResources",
+		  "base_env" : "DIT",
+		  "base_schema" : "HR_DEV",
+  	  "source_dir" : "C:\\Automation\\dbm_demo\\hr_demo\\versions",
+		  "environments" : [
+			 "DIT",
+			 "QA1,QA2",
+			 "STAGE",
+			 "PROD"
+		   ],
+ 		  "approvers" : [
+ 			 "teamwork",
+ 			 "teamwork",
+ 			 "teamwork",
+ 			 "teamwork"
+ 		   ]
+		  }
+		],
+		"hrm" : [
+		  {
+		  "pipeline" : "HRMADM",
+		  "base_env" : "Day0",
+		  "base_schema" : "AH3111ODZ_DEVOPS",
+		  "source_dir" : "C:\\Automation\\dbm_demo\\hrm_demo\\3.11.2\\db_request\\SQLSRV",
+		  "environments" : [
+			 "Day0",
+			 "SHK",
+			 "ST",
+			 "QA"
+		   ],
+		  "approvers" : [
+			 "teamwork",
+			 "teamwork",
+			 "teamwork",
+			 "teamwork"
+		   ]
+		  }
+		]
+	}
+}
+

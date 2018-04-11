@@ -1,0 +1,1 @@
+alter table locations add (region_id number);

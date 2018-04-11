@@ -1,0 +1,2 @@
+CREATE INDEX IDX_EMPLOYEE_TYPE ON EMPLOYEES (employee_type);
+exit;

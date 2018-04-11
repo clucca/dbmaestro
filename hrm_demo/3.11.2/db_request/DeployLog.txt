@@ -1,0 +1,5 @@
+#  Deploy Log #
+
+2/1/18 Set 3.11.2.1 for SQL Deployment
+2/1/18 Set 3.11.2.1 for Oracle deployment
+2/5/18 282 now oracle
